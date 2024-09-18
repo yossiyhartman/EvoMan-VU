@@ -1,54 +1,13 @@
-# imports framework
-import sys
-
-# imports other libs
-import numpy as np
 import os
-import math
-import itertools
-import pandas as pd
-import sys, os
+import random
+import numpy as np
 from evoman.environment import Environment
 from demo_controller import player_controller
 from operators.selection_methods import SelectionMethods
-from helpers import *
+from utils.helpers import *
 
-import random
 random.seed(10)
 np.random.seed(10)
-
-
-def survivor_selection(pop, pop_fit, n_pop, method="elitism"):
-    """
-    Replaces the old survivor_selection function using the SelectionMethods class.
-    """
-    population_with_fitness = [(pop[i], pop_fit[i]) for i in range(len(pop))]
-    selection = SelectionMethods(population_with_fitness)
-
-    # Choose the survivor selection method
-    if method == "elitism":
-        survivors = selection.elitism(n_pop)
-    elif method == "fitness_proportionate":
-        survivors = selection.fitness_proportionate_selection(n_pop)
-    elif method == "tournament":
-        survivors = selection.tournament_selection(tournament_size=3, num_survivors=n_pop)
-    elif method == "rank_based":
-        survivors = selection.rank_based_selection(n_pop)
-    elif method == "steady_state":
-        # For steady-state, you would provide offspring as additional input
-        offspring = []  # Needs to be passed accordingly
-        survivors = selection.steady_state_selection(offspring, num_replacements=10)
-    elif method == "truncation":
-        survivors = selection.truncation_selection(truncation_threshold=0.5)
-    elif method == "random":
-        survivors = selection.random_replacement(num_replacements=10)
-    else:
-        raise ValueError(f"Unknown selection method: {method}")
-
-    # Extract individuals and fitness from survivors
-    pop_survivors, pop_fit_survivors = zip(*survivors)
-    return np.array(pop_survivors), np.array(pop_fit_survivors)
-
 
 experiment_name = 'test1'
 
@@ -84,10 +43,7 @@ for i in range(generations):
     offspring_fit = evaluate(env, offspring)
     pop = np.vstack((pop, offspring))
     pop_fit = np.concatenate([pop_fitness, offspring_fit])
-    
-    # Use the new survivor selection function with elitism method
-    pop, pop_fit = survivor_selection(pop, pop_fit, population_size, method="elitism")
-    
+    pop, pop_fit = SelectionMethods().select_survivor(pop, pop_fit, population_size, selection_type="elitism")
     print(f"Gen {i} - Best: {np.max(pop_fit)} - Mean: {np.mean(pop_fit)}")
 
 fittest_index = np.argmax(pop_fit)

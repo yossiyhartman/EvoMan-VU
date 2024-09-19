@@ -1,9 +1,7 @@
 import datetime as dt
-
 from evoman.environment import Environment
 from demo_controller import player_controller
 import numpy as np
-
 from classes.GA import GA
 from classes.DataHandler import DataHandler
 
@@ -11,7 +9,6 @@ from classes.DataHandler import DataHandler
 ##############################
 ##### Initialize Environment
 ##############################
-
 
 n_hidden_neurons = 10
 

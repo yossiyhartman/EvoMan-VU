@@ -16,7 +16,6 @@ class DataHandler:
         headers = False
 
         if not os.path.exists(f"{path}/{file}"):
-            print("file not exists")
             headers = True
 
         with open(f"{path}/{file}", "a+") as f:
@@ -25,6 +24,8 @@ class DataHandler:
 
             for entry in self.log:
                 f.write(",".join(str(x) for x in entry) + "\n")
+
+        self.log = []
 
     def load_champions(self, path="./logs", file="champions.json"):
         try:

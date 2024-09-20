@@ -3,7 +3,12 @@ import random
 import numpy as np
 from evoman.environment import Environment
 from demo_controller import player_controller
+
+from operators.parent_selection_methods import ParentSelectionMethods
+from operators.recombination_methods import RecombinationMethods
+from operators.mutation_methods import MutationMethods
 from operators.selection_methods import SelectionMethods
+
 from utils.helpers import *
 
 random.seed(10)
@@ -37,13 +42,16 @@ pop = initialize_population(population_size, -2, 2)
 pop_fitness = evaluate(env, pop)
 
 for i in range(generations):
-    parents = parent_selection(pop, pop_fitness, len(pop_fitness), smoothing=1)
-    offspring = crossover(parents)
-    offspring = mutate(offspring, weight_lower_bound, weight_upper_bound, mutation_sigma)
+    parents = ParentSelectionMethods().select_parents(pop, pop_fitness, len(pop_fitness), smoothing=1, method="fitness_prop_selection")
+
+    unmutated_offspring = RecombinationMethods().create_offspring(parents, method="one_point_crossover")
+    
+    offspring = MutationMethods().apply_mutation(unmutated_offspring, weight_lower_bound, weight_upper_bound, mutation_sigma)
     offspring_fit = evaluate(env, offspring)
+    
     pop = np.vstack((pop, offspring))
     pop_fit = np.concatenate([pop_fitness, offspring_fit])
-    pop, pop_fit = SelectionMethods().select_survivor(pop, pop_fit, population_size, selection_type="elitism")
+    pop, pop_fit = SelectionMethods().select_survivor(pop, pop_fit, population_size, method="elitism")
     print(f"Gen {i} - Best: {np.max(pop_fit)} - Mean: {np.mean(pop_fit)}")
 
 fittest_index = np.argmax(pop_fit)

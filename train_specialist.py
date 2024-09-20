@@ -1,4 +1,5 @@
 import datetime as dt
+from tkinter.tix import Tree
 from evoman.environment import Environment
 from demo_controller import player_controller
 import numpy as np
@@ -150,7 +151,10 @@ print(2 * "\n" + 7 * "-" + " Finished Evolving " + 7 * "-", end="\n\n")
 # ##### Write to file (logs)
 # ##############################
 
-data_handler.save_logs()
+save_logs = False
+
+if save_logs:
+    data_handler.save_logs()
 
 
 # ##############################

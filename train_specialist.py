@@ -50,9 +50,9 @@ data_handler = DataHandler()
 data_handler.load_champions()
 
 print("\n" + 7 * "-" + " Current Champion " + 7 * "-", end="\n\n")
-print(f"\tFitness:\t{data_handler.champions[f"enemy {env.enemyn}"]['fitness']}")
-print(f"\tVictorious:\t{data_handler.champions[f"enemy {env.enemyn}"]['victorious']}")
-print(f"\tbattle time:\t{data_handler.champions[f"enemy {env.enemyn}"]['battle time']}")
+print(f"\tFitness:\t{data_handler.champions[f'enemy {env.enemyn}']['fitness']}")
+print(f"\tVictorious:\t{data_handler.champions[f'enemy {env.enemyn}']['victorious']}")
+print(f"\tbattle time:\t{data_handler.champions[f'enemy {env.enemyn}']['battle time']}")
 
 ##############################
 ##### Hyper Parameter Selection

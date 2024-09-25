@@ -1,9 +1,18 @@
+import os
 import datetime as dt
 from evoman.environment import Environment
 from demo_controller import player_controller
 import numpy as np
 from classes.GA import GA
 from classes.DataHandler import DataHandler
+
+
+
+
+log_folder = "selection - tournament - logs"
+
+if not os.path.exists(f'./{log_folder}'):
+    os.mkdir(f'./{log_folder}')
 
 
 ##############################
@@ -13,8 +22,8 @@ from classes.DataHandler import DataHandler
 n_hidden_neurons = 10
 
 env = Environment(
-    experiment_name="logs",
-    enemies=[3],
+    experiment_name=log_folder,
+    enemies=[1],
     playermode="ai",
     player_controller=player_controller(n_hidden_neurons),
     enemymode="static",
@@ -107,13 +116,13 @@ for generation in range(1, hyperp["generations"] + 1):
     combined_f = np.append(population_f, offspring_f)
 
     # ELITIST SELECTION
-    n_best_w, n_best_f, combined_w, combined_f = algo.eletist_selection(combined_w, combined_f, hyperp['n_best'])
+    # n_best_w, n_best_f, combined_w, combined_f = algo.eletist_selection(combined_w, combined_f, hyperp['n_best'])
 
     # SURVIVAL SELECTION
-    selected_w, selected_f = algo.survival_selection(combined_w, combined_f)
+    population_w, population_f = algo.survival_selection(combined_w, combined_f)
 
-    population_w = np.vstack((selected_w, n_best_w))
-    population_f = np.append(selected_f, n_best_f)
+    # population_w = np.vstack((selected_w, n_best_w))
+    # population_f = np.append(selected_f, n_best_f)
     
     best_idx = np.argmax(population_f)
     best_w = population_w[best_idx]
@@ -147,7 +156,7 @@ if save_logs:
 # ##### Test run
 # ##############################
 
-show_test_run = False
+show_test_run = True
 
 if show_test_run:
     env.update_parameter("speed", "normal")
@@ -158,7 +167,7 @@ if show_test_run:
 # ##### (Possibly) Update Champion
 # ##############################
 
-save_champion = True
+save_champion = False
 
 if save_champion and (data_handler.champions[f"enemy {env.enemyn}"]['fitness'] < battle_results['fitness']):
     data_handler.champions[f"enemy {env.enemyn}"]['run'] = run_time

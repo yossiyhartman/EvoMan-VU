@@ -60,7 +60,7 @@ class GA:
         # Calculate a survival probability
         survival_prob = normalized_f / np.sum(normalized_f)
 
-        selection_idx = np.random.choice(population.shape[0], size=self.population_size - self.elites, p=survival_prob, replace=False)
+        selection_idx = np.random.choice(population.shape[0], size=self.population_size, p=survival_prob, replace=False)
 
         return population[selection_idx], fitness[selection_idx]
 

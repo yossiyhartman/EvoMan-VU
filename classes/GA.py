@@ -64,6 +64,54 @@ class GA:
 
         return population[selection_idx], fitness[selection_idx]
 
+
+    def roulette_wheel_selection(self, population: np.array, fitness: np.array) -> np.array:
+        min_fitness = np.min(fitness)
+        if min_fitness < 0:
+            fitness = fitness - min_fitness
+        
+        total_fitness = np.sum(fitness)
+        
+        if total_fitness == 0:
+            probabilities = np.ones_like(fitness) / len(fitness)
+        else:
+            probabilities = fitness / total_fitness
+        
+        indices = np.random.choice(len(population), size=self.population_size, p=probabilities)
+        return population[indices]
+
+
+    def rank_selection(self, population: np.array, fitness: np.array) -> np.array:
+        ranks = np.argsort(fitness)
+        rank_probabilities = np.arange(1, self.population_size + 1) / np.sum(np.arange(1, self.population_size + 1))
+        selected_indices = np.random.choice(ranks, size=self.population_size, p=rank_probabilities)
+        return population[selected_indices]
+
+
+    def stochastic_universal_sampling(self, population: np.array, fitness: np.array) -> np.array:
+        total_fitness = np.sum(fitness)
+        
+        if total_fitness == 0:
+            return population  
+        
+        distance = total_fitness / self.population_size
+        start_point = np.random.uniform(0, distance)
+        points = [start_point + i * distance for i in range(self.population_size)]
+
+        cumulative_fitness = np.cumsum(fitness)
+        selected = []
+        i, j = 0, 0
+        
+        while i < self.population_size and j < len(population):
+            if points[i] < cumulative_fitness[j]:
+                selected.append(population[j])
+                i += 1  
+            else:
+                j += 1  
+                
+        return np.asarray(selected)
+
+    
     ###################
     # MUTATION
     ###################

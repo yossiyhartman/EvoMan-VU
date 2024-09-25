@@ -32,15 +32,6 @@ def simulation(x):
 def evaluate(x):
     return np.array(list(map(lambda y: simulation(y), x)))
 
-def norm(x, pfit_pop):
-    if (max(pfit_pop) - min(pfit_pop)) > 0:
-        x_norm = (x - min(pfit_pop)) / (max(pfit_pop) - min(pfit_pop))
-    else:
-        x_norm = 0
-
-    if x_norm <= 0:
-        x_norm = 0.0000000001
-    return x_norm
 
 ##############################
 ##### Load Data
@@ -167,7 +158,9 @@ if show_test_run:
 # ##### (Possibly) Update Champion
 # ##############################
 
-if data_handler.champions[f"enemy {env.enemyn}"]['fitness'] < battle_results['fitness']:
+save_champion = True
+
+if save_champion and (data_handler.champions[f"enemy {env.enemyn}"]['fitness'] < battle_results['fitness']):
     data_handler.champions[f"enemy {env.enemyn}"]['run'] = run_time
     data_handler.champions[f"enemy {env.enemyn}"]['fitness'] = battle_results['fitness'].tolist()
     data_handler.champions[f'enemy {env.enemyn}']['weights'] = battle_results['weights'].tolist()

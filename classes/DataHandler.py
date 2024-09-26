@@ -4,7 +4,21 @@ import os
 
 class DataHandler:
     def __init__(self) -> None:
-        self.logs_headers = ["run", "enemy", "generation", "fitness", "mean.fitness", "std.fitness"]
+        self.logs_headers = [
+            "run",
+            "enemy",
+            "generation",
+            "max.fitness",
+            "mean.fitness",
+            "median.fitness",
+            "min.fitness",
+            "std.fitness",
+            "mutation_p_individual",
+            "mutation_p_genome",
+            "mutation_sigma",
+            "elites",
+            "phase",
+        ]
         self.log = []
         self.champions = {}
 
@@ -36,7 +50,6 @@ class DataHandler:
             with open(f"{path}/{file}", "w") as f:
                 for _ in range(1, 9):
                     self.champions[f"enemy {_}"] = {
-                        "run": 0,
                         "fitness": -99999,
                         "victorious": False,  # did the champion beat the enemy
                         "battle time": -99,  #

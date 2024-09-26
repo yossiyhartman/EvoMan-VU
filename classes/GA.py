@@ -3,12 +3,11 @@ import numpy as np
 
 class GA:
 
-    def __init__(self, n_genomes, population_size, n_offspring, mutation_p, elites) -> None:
+    def __init__(self, n_genomes, population_size, n_offspring, mutation_p) -> None:
         self.n_genomes = n_genomes
         self.population_size = population_size
         self.n_offspring = n_offspring
         self.mutation_p = mutation_p
-        self.elites = elites
 
     @classmethod
     def norm(self, x, pfit_pop):
@@ -26,7 +25,7 @@ class GA:
     ###################
 
     def initialize_population(self) -> np.array:
-        return np.random.normal(size=(self.population_size, self.n_genomes))
+        return np.random.uniform(size=(self.population_size, self.n_genomes))
 
     ###################
     # SELECTION
@@ -53,14 +52,14 @@ class GA:
 
         return n_best_individuals_w, n_best_individuals_f, population, fitness
 
-    def survival_selection(self, population: np.array, fitness: np.array) -> np.array:
+    def survival_selection(self, population: np.array, fitness: np.array, size: int) -> np.array:
 
         normalized_f = np.asarray(list(map(lambda x: self.norm(x, fitness), fitness)))
 
         # Calculate a survival probability
         survival_prob = normalized_f / np.sum(normalized_f)
 
-        selection_idx = np.random.choice(population.shape[0], size=self.population_size, p=survival_prob, replace=False)
+        selection_idx = np.random.choice(population.shape[0], size=size, p=survival_prob, replace=False)
 
         return population[selection_idx], fitness[selection_idx]
 

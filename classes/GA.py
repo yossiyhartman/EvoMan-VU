@@ -25,7 +25,7 @@ class GA:
     ###################
 
     def initialize_population(self) -> np.array:
-        return np.random.uniform(size=(self.population_size, self.n_genomes))
+        return np.random.uniform(low=0, high=1, size=(self.population_size, self.n_genomes))
 
     ###################
     # SELECTION

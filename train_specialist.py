@@ -64,9 +64,9 @@ hyperp = {
     "n_vars": (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5,
     "population_size": 30,
     "n_offspring": 2,
-    "mutation_sigma": 0.4,
+    "mutation_sigma": 0.35,
     "generations": 20,
-    "n_best": 0,
+    "n_best": 3,
 }
 
 ##############################
@@ -85,7 +85,7 @@ battle_results = {
 }
 
 # Value indicates how many times the algorithm trains on specific enemy
-n_runs = 10
+n_runs = 1
 
 for _ in range(n_runs):
 
@@ -121,15 +121,15 @@ for _ in range(n_runs):
         combined_f = np.append(population_f, offspring_f)
 
         # SURVIVAL SELECTION
-        population_w, population_f = algo.survival_selection(combined_w, combined_f, hyperp['population_size'])
+        # population_w, population_f = algo.survival_selection(combined_w, combined_f, hyperp['population_size'])
 
         # ELITIST SELECTION + # SURVIVAL SELECTION | Uncomment following block if you want to use elitist selection
-        # n_best_w, n_best_f, combined_w, combined_f = algo.eletist_selection(combined_w, combined_f, hyperp['n_best'])
+        n_best_w, n_best_f, combined_w, combined_f = algo.eletist_selection(combined_w, combined_f, hyperp['n_best'])
 
-        # population_w, population_f = algo.survival_selection(combined_w, combined_f, hyperp['population_size'] - hyperp['n_best'] )
+        selected_w, selected_f = algo.survival_selection(combined_w, combined_f, hyperp['population_size'] - hyperp['n_best'] )
 
-        # population_w = np.vstack((selected_w, n_best_w))
-        # population_f = np.append(selected_f, n_best_f)
+        population_w = np.vstack((selected_w, n_best_w))
+        population_f = np.append(selected_f, n_best_f)
 
         best_idx = np.argmax(population_f)
         best_w = population_w[best_idx]
@@ -151,7 +151,7 @@ for _ in range(n_runs):
 # ##### Write to file (logs)
 # ##############################
 
-save_logs = True
+save_logs = False
 
 if save_logs:
     data_handler.save_logs(path=log_folder)
@@ -161,7 +161,7 @@ if save_logs:
 # ##### Test run
 # ##############################
 
-show_test_run = True
+show_test_run = False
 
 if show_test_run:
     env.update_parameter("speed", "normal")
@@ -172,7 +172,7 @@ if show_test_run:
 # ##### (Possibly) Update Champion
 # ##############################
 
-save_champion = True
+save_champion = False
 
 if save_champion and (data_handler.champions[f"enemy {env.enemyn}"]['fitness'] < battle_results['fitness']):
     data_handler.champions[f"enemy {env.enemyn}"]['run'] = run_time

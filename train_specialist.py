@@ -1,5 +1,6 @@
 import os
 import datetime as dt
+import pprint
 
 from evoman.environment import Environment
 from demo_controller import player_controller
@@ -12,7 +13,7 @@ from classes.DataHandler import DataHandler
 ##############################
 
 # This is the folder that collects the logs of the runs
-log_folder = "EA1"
+log_folder = "EA1_05_explorive_35_exploit"
 
 if not os.path.exists(f"./{log_folder}"):
     os.mkdir(f"./{log_folder}")
@@ -68,7 +69,7 @@ def set_hyperparameters():
         "population_size": 88,
         "n_offspring": 4,
         "generations": 40,
-        "exploration.period": 20,
+        "exploration.period": 5,
         "tournament_size": 8,
         "mutation_p_individual": 0.5,
         "mutation_p_genome": 0.5,
@@ -99,6 +100,10 @@ battle_results = {"fitness": -99, "weights": []}
 n_runs = 10
 
 for _ in range(n_runs):
+
+    # Evolve population
+    print(2 * "\n" + 7 * "-" + f" run {_}, parameter reset" + 7 * "-", end="\n\n")
+    pprint.pprint(hyperp)
 
     # data log
     data_log = {

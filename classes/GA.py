@@ -117,7 +117,7 @@ class GA:
     def mutate(self, offspring: np.array) -> np.array:
         for individual in offspring:
             if np.random.rand() < self.mutation_p_individual:
-                mutation_dist = np.random.uniform(0, 1, size=self.n_genomes) <= self.mutation_p_genome
+                mutation_dist = np.random.uniform(0, 1, size=self.n_genomes) < self.mutation_p_genome
                 individual += mutation_dist * np.random.normal(0, self.mutation_sigma, size=self.n_genomes)
         return offspring
 
@@ -134,8 +134,7 @@ class GA:
             offspring = np.zeros(shape=(self.n_offspring, self.n_genomes))
 
             for child in offspring:
-                # cross_distribution = np.random.uniform(0, 1)
-                cross_distribution = 0.5
+                cross_distribution = np.random.uniform(0, 1)
                 child += cross_distribution * parents[i] + (1 - cross_distribution) * parents[i + 1]
                 total_offspring.append(child)
 

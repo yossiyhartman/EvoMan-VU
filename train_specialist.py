@@ -11,7 +11,7 @@ from classes.DataHandler import DataHandler
 ##############################
 
 # This is the folder that collects the logs of the runs
-log_folder = "exploitative EA"
+log_folder = "EA1"
 
 if not os.path.exists(f"./{log_folder}"):
     os.mkdir(f"./{log_folder}")
@@ -134,7 +134,7 @@ data_log = {
 }
 
 # Value indicates how many times the algorithm trains on specific enemy
-n_runs = 1
+n_runs = 10
 
 for _ in range(n_runs):
 
@@ -241,7 +241,7 @@ for _ in range(n_runs):
 # ##### Write to file (logs)
 # ##############################
 
-save_logs = False
+save_logs = True
 
 if save_logs:
     data_handler.save_logs(path=log_folder)
@@ -251,7 +251,7 @@ if save_logs:
 # ##### Test run
 # ##############################
 
-show_test_run = False
+show_test_run = True
 
 if show_test_run:
     env.update_parameter("speed", "normal")
@@ -262,7 +262,7 @@ if show_test_run:
 # ##### (Possibly) Update Champion
 # ##############################
 
-save_champion = False
+save_champion = True
 
 if save_champion and (data_handler.champions[f"enemy {env.enemyn}"]["fitness"] < battle_results["fitness"]):
     data_handler.champions[f"enemy {env.enemyn}"]["fitness"] = battle_results["fitness"].tolist()

@@ -13,16 +13,24 @@ class DataHandler:
             "median.fitness",
             "min.fitness",
             "std.fitness",
-            "mutation_p_individual",
-            "mutation_p_genome",
-            "mutation_sigma",
+            "tournament.size",
+            "mutation.p.individual",
+            "mutation.p.genome",
+            "mutation.sigma",
+            "population.size",
             "elites",
             "phase",
         ]
         self.log = []
         self.champions = {}
 
-    def add_log(self, data):
+    @classmethod
+    def print_data(self, data):
+        print("{:<23} {:<6} {:<12} {:<13} {:<14} {:<15} {:<12} {:<12} {:<17} {:<23} {:<20} {:<15} {:<17} {:<10} {:<10}".format(*data))
+
+    def add_log(self, data, print=True):
+        if print:
+            self.print_data(data)
         self.log.append(data)
 
     def save_logs(self, path="./logs", file="logs.txt"):

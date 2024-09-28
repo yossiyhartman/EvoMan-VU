@@ -1,5 +1,6 @@
 import os
 import datetime as dt
+
 from evoman.environment import Environment
 from demo_controller import player_controller
 import numpy as np
@@ -61,86 +62,66 @@ print(f"\tbattle time:\t{data_handler.champions[f'enemy {env.enemyn}']['battle t
 ##############################
 
 
-hyperp = {
-    # Number of weights in network
-    "network_weights": (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5,
-    # Total number of individuals per generation
-    "population_size": 88,
-    # Number of generations
-    "generations": 30,
-    # the amount of offspring are created per pair of parents. (e.g. 2 parents create 3 children )
-    "n_offspring": 3,
-    # Refers to the probability to which an individual is considered for mutation
-    "mutation_p_individual": 0.5,
-    # Refers to the probability to which an genome is mutated
-    "mutation_p_genome": 0.5,
-    # Refers to amount of mutation a potential g_nomes can receive
-    "mutation_sigma": 0.35,
-    # Refers to the number of best individuals which are garuanteed to move to the next generation
-    "n_best": 5,
-    #
-    "exploration.active": False,
-    # The amount of generations which are used for exploration
-    "exploration.period": 10,
-    # The amount of generations which are used to go from explorative to exploitative
-    "pivot.period": 10,
-    # What are the 'final' values of the paramters
-    "endpoints": {
-        "mutation_p_individual": 0.2,
-        "mutation_p_genome": 0.1,
-        "mutation_sigma": 0.1,
-        "n_best": 20,
-    },
-}
+def set_hyperparameters():
+    return {
+        "network_weights": (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5,
+        "population_size": 88,
+        "n_offspring": 4,
+        "generations": 40,
+        "exploration.period": 20,
+        "tournament_size": 8,
+        "mutation_p_individual": 0.5,
+        "mutation_p_genome": 0.5,
+        "mutation_sigma": 0.35,
+        "n_best": 0,
+        # ------
+        "exploitive.tournament_size": 2,
+        "exploitive.mutation_p_individual": 0.5,
+        "exploitive.mutation_p_genome": 0.2,
+        "exploitive.mutation_sigma": 0.05,
+        "exploitive.n_best": 50,
+    }
 
-parameter_steps = {
-    "mutation_p_individual": np.linspace(start=hyperp["mutation_p_individual"], stop=hyperp["endpoints"]["mutation_p_individual"], num=hyperp["pivot.period"]),
-    "mutation_p_genome": np.linspace(start=hyperp["mutation_p_genome"], stop=hyperp["endpoints"]["mutation_p_genome"], num=hyperp["pivot.period"]),
-    "mutation_sigma": np.linspace(start=hyperp["mutation_sigma"], stop=hyperp["endpoints"]["mutation_sigma"], num=hyperp["pivot.period"]),
-    "n_best": np.linspace(start=hyperp["n_best"], stop=hyperp["endpoints"]["n_best"], num=hyperp["pivot.period"], dtype=int),
-}
+
+hyperp = set_hyperparameters()
 
 ##############################
 ##### Simulation
 ##############################
 
-algo = GA(
-    n_genomes=hyperp["network_weights"],
-    population_size=hyperp["population_size"],
-    n_offspring=hyperp["n_offspring"],
-    mutation_p_individual=hyperp["mutation_p_individual"],
-    mutation_p_genome=hyperp["mutation_p_genome"],
-    mutation_sigma=hyperp["mutation_sigma"],
-)
+algo = GA(n_genomes=hyperp["network_weights"], population_size=hyperp["population_size"], n_offspring=hyperp["n_offspring"])
 
 # save best individual
 battle_results = {"fitness": -99, "weights": []}
 
-# data log
-data_log = {
-    "run": None,
-    "enemy": env.enemyn,
-    "generation": 0,
-    "max.fitness": None,
-    "mean.fitness": None,
-    "median.fitness": None,
-    "min.fitness": None,
-    "std.fitness": None,
-    "mutation_p_individual": hyperp["mutation_p_individual"],
-    "mutation_p_genome": hyperp["mutation_p_genome"],
-    "mutation_sigma": hyperp["mutation_sigma"],
-    "n_best": hyperp["n_best"],
-    "phase": "initialize",
-}
 
 # Value indicates how many times the algorithm trains on specific enemy
 n_runs = 10
 
 for _ in range(n_runs):
 
+    # data log
+    data_log = {
+        "run": None,
+        "enemy": env.enemyn,
+        "generation": 0,
+        "max.fitness": None,
+        "mean.fitness": None,
+        "median.fitness": None,
+        "min.fitness": None,
+        "std.fitness": None,
+        "tournament_size": hyperp["tournament_size"],
+        "mutation_p_individual": hyperp["mutation_p_individual"],
+        "mutation_p_genome": hyperp["mutation_p_genome"],
+        "mutation_sigma": hyperp["mutation_sigma"],
+        "population_size": hyperp["population_size"],
+        "n_best": hyperp["n_best"],
+        "phase": "initialize",
+    }
+
     # Evolve population
     print(2 * "\n" + 7 * "-" + " Start Evolving " + 7 * "-", end="\n\n")
-    print("{:<23} {:<6} {:<12} {:<13} {:<14} {:<15} {:<12} {:<12} {:<23} {:<20} {:<15} {:<10} {:<10}".format(*data_handler.logs_headers))
+    data_handler.print_data(data_handler.logs_headers)
 
     # Initialize population
     population_w = algo.initialize_population()
@@ -149,46 +130,47 @@ for _ in range(n_runs):
     data_log.update(
         {
             "run": dt.datetime.today().strftime("%d/%m/%Y %H:%M:%S"),
+            "generation": 0,
             "max.fitness": np.round(np.max(population_f), 3),
             "mean.fitness": np.round(np.mean(population_f), 3),
             "median.fitness": np.round(np.median(population_f), 3),
             "min.fitness": np.round(np.min(population_f), 3),
             "std.fitness": np.round(np.std(population_f), 3),
+            "tournament_size": np.round(hyperp["tournament_size"], 3),
+            "mutation_p_individual": np.round(hyperp["mutation_p_individual"], 3),
+            "mutation_p_genome": np.round(hyperp["mutation_p_genome"], 3),
+            "mutation_sigma": np.round(hyperp["mutation_sigma"], 3),
+            "n_best": hyperp["n_best"],
+            "phase": "initialize",
         }
     )
 
     data_handler.add_log([v for k, v in data_log.items()])
-    print("{:<23} {:<6} {:<12} {:<13} {:<14} {:<15} {:<12} {:<12} {:<23} {:<20} {:<15} {:<10} {:<10}".format(*[v for k, v in data_log.items()]))
 
     for generation in range(1, hyperp["generations"] + 1):
 
-        if hyperp["exploration.active"]:
-            if generation <= hyperp["exploration.period"]:
-                phase = "exploring"
-            elif hyperp["exploration.period"] < generation <= hyperp["exploration.period"] + hyperp["pivot.period"]:
-                phase = "pivoting"
-                idx = generation - (hyperp["exploration.period"] + 1)
-                hyperp.update(
-                    {
-                        "mutation_p_individual": parameter_steps["mutation_p_individual"][idx],
-                        "mutation_p_genome": parameter_steps["mutation_p_genome"][idx],
-                        "mutation_sigma": parameter_steps["mutation_sigma"][idx],
-                        "n_best": parameter_steps["n_best"][idx],
-                    }
-                )
-            else:
-                phase = "exploiting"
+        if generation <= hyperp["exploration.period"]:
+            phase = "exploring"
         else:
-            phase = "-"
+            phase = "exploiting"
+            hyperp.update(
+                {
+                    "tournament_size": hyperp["exploitive.tournament_size"],
+                    "mutation_p_individual": hyperp["exploitive.mutation_p_individual"],
+                    "mutation_p_genome": hyperp["exploitive.mutation_p_genome"],
+                    "mutation_sigma": hyperp["exploitive.mutation_sigma"],
+                    "n_best": hyperp["exploitive.n_best"],
+                }
+            )
 
         # PARENT SELECTION
-        parents = algo.tournament_selection(population_w, population_f)
+        parents_w, parents_f = algo.tournament_selection(population_w, population_f, hyperp["tournament_size"])
 
         # CROSSOVER
-        offspring_w = algo.crossover(parents)
+        offspring_w = algo.crossover(parents_w)
 
         # MUTATION
-        offspring_w = algo.mutate(offspring_w)
+        offspring_w = algo.mutate(offspring=offspring_w, p_mutation=hyperp["mutation_p_individual"], p_genome=hyperp["mutation_p_genome"], sigma_mutation=hyperp["mutation_sigma"])
 
         # EVALUATE
         offspring_f = evaluate(offspring_w)
@@ -197,15 +179,17 @@ for _ in range(n_runs):
         combined_w = np.vstack((population_w, offspring_w))
         combined_f = np.append(population_f, offspring_f)
 
-        # Save the n-best individuals
-        n_best_w, n_best_f, combined_w, combined_f = algo.eletist_selection(combined_w, combined_f, hyperp["n_best"])
+        if hyperp["n_best"] == hyperp["population_size"]:
+            population_w, population_f, _, _ = algo.eletist_selection(combined_w, combined_f, hyperp["n_best"])
 
-        # SURVIVAL SELECTION
-        selected_w, selected_f = algo.survival_selection(combined_w, combined_f, hyperp["population_size"] - hyperp["n_best"])
+        elif hyperp["n_best"] > 0:
+            n_best_w, n_best_f, combined_w, combined_f = algo.eletist_selection(combined_w, combined_f, hyperp["n_best"])
+            selected_w, selected_f = algo.survival_selection(combined_w, combined_f, hyperp["population_size"] - hyperp["n_best"])
+            population_w = np.vstack((selected_w, n_best_w))
+            population_f = np.append(selected_f, n_best_f)
 
-        # Set new population
-        population_w = np.vstack((selected_w, n_best_w))
-        population_f = np.append(selected_f, n_best_f)
+        else:
+            population_w, population_f = algo.survival_selection(combined_w, combined_f, hyperp["population_size"] - hyperp["n_best"])
 
         best_idx = np.argmax(population_f)
         best_w = population_w[best_idx]
@@ -223,6 +207,7 @@ for _ in range(n_runs):
                 "median.fitness": np.round(np.median(population_f), 3),
                 "min.fitness": np.round(np.min(population_f), 3),
                 "std.fitness": np.round(np.std(population_f), 3),
+                "tournament_size": np.round(hyperp["tournament_size"], 3),
                 "mutation_p_individual": np.round(hyperp["mutation_p_individual"], 3),
                 "mutation_p_genome": np.round(hyperp["mutation_p_genome"], 3),
                 "mutation_sigma": np.round(hyperp["mutation_sigma"], 3),
@@ -232,9 +217,10 @@ for _ in range(n_runs):
         )
 
         data_handler.add_log([v for k, v in data_log.items()])
-        print("{:<23} {:<6} {:<12} {:<13} {:<14} {:<15} {:<12} {:<12} {:<23} {:<20} {:<15} {:<10} {:<10}".format(*[v for k, v in data_log.items()]))
 
     print(2 * "\n" + 7 * "-" + " Finished Evolving " + 7 * "-", end="\n\n")
+
+    hyperp = set_hyperparameters()
 
 
 # ##############################

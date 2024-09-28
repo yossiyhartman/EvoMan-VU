@@ -3,13 +3,10 @@ import numpy as np
 
 class GA:
 
-    def __init__(self, n_genomes, population_size, n_offspring, mutation_p_individual, mutation_p_genome, mutation_sigma) -> None:
+    def __init__(self, n_genomes, population_size, n_offspring) -> None:
         self.n_genomes = n_genomes
         self.population_size = population_size
         self.n_offspring = n_offspring
-        self.mutation_p_individual = mutation_p_individual
-        self.mutation_p_genome = mutation_p_genome
-        self.mutation_sigma = mutation_sigma
 
     @classmethod
     def norm(self, x, pfit_pop):
@@ -27,22 +24,31 @@ class GA:
     ###################
 
     def initialize_population(self) -> np.array:
-        return np.random.normal(size=(self.population_size, self.n_genomes))
-        # return np.random.uniform(low=-1, high=1, size=(self.population_size, self.n_genomes))
+        # return np.random.normal(size=(self.population_size, self.n_genomes))
+        return np.random.uniform(low=-2, high=2, size=(self.population_size, self.n_genomes))
 
     ###################
     # SELECTION
     ###################
 
-    def tournament_selection(self, population: np.array, fitness: np.array) -> np.array:
-        selected = []
+    def tournament_selection(self, population: np.array, fitness: np.array, tournament_size: int = 2) -> np.array:
+        selected_w, selected_f = [], []
 
         for i in range(0, self.population_size, 1):
-            index_p1, index_p2 = np.random.randint(0, self.population_size, 2)
-            winner = population[index_p1] if fitness[index_p1] > fitness[index_p2] else population[index_p2]
-            selected.append(winner)
 
-        return np.asarray(selected)
+            idx = np.random.randint(0, self.population_size, tournament_size)
+
+            fitness_vals = fitness[idx]
+
+            best_sample_idx = np.argmax(fitness_vals)
+
+            winner_w = population[idx[best_sample_idx]]
+            winner_f = fitness[idx[best_sample_idx]]
+
+            selected_w.append(winner_w)
+            selected_f.append(winner_f)
+
+        return np.asarray(selected_w), np.asarray(selected_f)
 
     def eletist_selection(self, population: np.array, fitness: np.array, top: int = 2) -> np.array:
 
@@ -114,11 +120,11 @@ class GA:
     # MUTATION
     ###################
 
-    def mutate(self, offspring: np.array) -> np.array:
+    def mutate(self, offspring: np.array, p_mutation: float = 0.5, p_genome: float = 0.5, sigma_mutation: float = 0.3) -> np.array:
         for individual in offspring:
-            if np.random.rand() < self.mutation_p_individual:
-                mutation_dist = np.random.uniform(0, 1, size=self.n_genomes) < self.mutation_p_genome
-                individual += mutation_dist * np.random.normal(0, self.mutation_sigma, size=self.n_genomes)
+            if np.random.rand() < p_mutation:
+                mutation_dist = np.random.uniform(0, 1, size=self.n_genomes) < p_genome
+                individual += mutation_dist * np.random.normal(0, sigma_mutation, size=self.n_genomes)
         return offspring
 
     ###################

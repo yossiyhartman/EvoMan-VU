@@ -131,17 +131,27 @@ class GA:
     # CROSSOVER
     ###################
 
-    def crossover(self, parents: np.array) -> np.array:
+    def crossover(self, parents: np.array, p: float = 0.5) -> np.array:
 
         total_offspring = []
 
         for i in range(0, self.population_size, 2):
 
-            offspring = np.zeros(shape=(self.n_offspring, self.n_genomes))
+            offspring = np.zeros(shape=(2, self.n_genomes))
 
-            for child in offspring:
-                cross_distribution = np.random.uniform(0, 1)
-                child += cross_distribution * parents[i] + (1 - cross_distribution) * parents[i + 1]
-                total_offspring.append(child)
+            dist = np.random.uniform(0, 1, size=self.n_genomes)
+            select_p1 = dist < p
+            select_p2 = dist >= p
+
+            offspring[0] = select_p1 * parents[i] + select_p2 * parents[i + 1]
+            offspring[1] = select_p2 * parents[i] + select_p1 * parents[i + 1]
+
+            total_offspring.append(offspring[0])
+            total_offspring.append(offspring[1])
+
+            # for child in offspring:
+            #     cross_distribution = np.random.uniform(0, 1)
+            #     child += cross_distribution * parents[i] + (1 - cross_distribution) * parents[i + 1]
+            #     total_offspring.append(child)
 
         return np.asarray(total_offspring)

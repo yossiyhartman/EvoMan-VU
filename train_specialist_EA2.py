@@ -1,7 +1,7 @@
 import os
 import datetime as dt
 import pprint
-
+import pandas as pd
 from evoman.environment import Environment
 from demo_controller import player_controller
 import numpy as np
@@ -58,6 +58,11 @@ print(f"\tFitness:\t{data_handler.champions[f'enemy {env.enemyn}']['fitness']}")
 print(f"\tVictorious:\t{data_handler.champions[f'enemy {env.enemyn}']['victorious']}")
 print(f"\tbattle time:\t{data_handler.champions[f'enemy {env.enemyn}']['battle time']}")
 
+results = {}
+gain = {}
+
+enemies = [6, 4, 8]
+
 ##############################
 ##### Hyper Parameter Selection
 ##############################
@@ -94,13 +99,25 @@ hyperp = set_hyperparameters()
 
 algo = GA(n_genomes=hyperp["network_weights"], population_size=hyperp["population_size"], n_offspring=hyperp["n_offspring"])
 
-# save best individual
-battle_results = {"fitness": -99, "weights": []}
 
 # Value indicates how many times the algorithm trains on specific enemy
 n_runs = 10
 
 for _ in range(n_runs):
+
+    env = Environment(
+        experiment_name=log_folder,
+        enemies=[4],  # Enemies of interest 1, 3, 4
+        playermode="ai",
+        player_controller=player_controller(n_hidden_neurons),
+        enemymode="static",
+        level=2,
+        speed="fastest",
+        visuals=False,
+    )
+
+    # save best individual
+    battle_results = {"fitness": -99, "weights": []}
 
     # Evolve population
     print(2 * "\n" + 7 * "-" + f" run {_}, parameter reset" + 7 * "-", end="\n\n")
@@ -232,6 +249,24 @@ for _ in range(n_runs):
 
     hyperp = set_hyperparameters()
 
+    for enemy in enemies:
+        env.update_parameter("enemies", [enemy])
+
+        f, p, e, t = env.play(battle_results["weights"])
+
+        if not results.get(enemy):
+            results[enemy] = []
+            gain[enemy] = []
+
+        results[enemy].append(f)
+        gain[enemy].append(p - e)
+
+
+dfr = pd.DataFrame(results)
+dfg = pd.DataFrame(gain)
+dfr.to_csv("battle_output_EA2.csv")
+dfg.to_csv("battle_output_EA2_gain.csv")
+print(dfr, dfg)
 
 # ##############################
 # ##### Write to file (logs)

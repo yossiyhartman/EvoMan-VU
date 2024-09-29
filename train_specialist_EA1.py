@@ -7,13 +7,14 @@ from demo_controller import player_controller
 import numpy as np
 from classes.GA import GA
 from classes.DataHandler import DataHandler
+import pandas as pd
 
 ##############################
 ##### Specify log file destination
 ##############################
 
 # This is the folder that collects the logs of the runs
-log_folder = "output_EA2"
+log_folder = "output_EA1"
 
 if not os.path.exists(f"./{log_folder}"):
     os.mkdir(f"./{log_folder}")
@@ -58,6 +59,12 @@ print(f"\tFitness:\t{data_handler.champions[f'enemy {env.enemyn}']['fitness']}")
 print(f"\tVictorious:\t{data_handler.champions[f'enemy {env.enemyn}']['victorious']}")
 print(f"\tbattle time:\t{data_handler.champions[f'enemy {env.enemyn}']['battle time']}")
 
+
+results = {}
+
+enemies = [4, 6, 8]
+
+
 ##############################
 ##### Hyper Parameter Selection
 ##############################
@@ -69,20 +76,12 @@ def set_hyperparameters():
         "population_size": 70,
         "n_offspring": 2,
         "generations": 30,
-        "exploration.period": 20,
+        "reproduce_p": 0.47419626805893167,
+        "mutation_p_individual": 0.28753745118457064,
+        "mutation_p_genome": 0.7369551652097696,
+        "mutation_sigma": 0.8613221369404007,
         "tournament_size": 8,
-        "reproduce_p": 0.5,
-        "mutation_p_individual": 0.8,
-        "mutation_p_genome": 0.35,
-        "mutation_sigma": 1,
-        "n_best": 1,
-        # ------
-        "exploitive.tournament_size": 2,
-        "exploitive.reproduce_p": 0.1,
-        "exploitive.mutation_p_individual": 0.1,
-        "exploitive.mutation_p_genome": 0.1,
-        "exploitive.mutation_sigma": 0.1,
-        "exploitive.n_best": 15,
+        "n_best": 2,
     }
 
 
@@ -95,12 +94,15 @@ hyperp = set_hyperparameters()
 algo = GA(n_genomes=hyperp["network_weights"], population_size=hyperp["population_size"], n_offspring=hyperp["n_offspring"])
 
 # save best individual
-battle_results = {"fitness": -99, "weights": []}
 
 # Value indicates how many times the algorithm trains on specific enemy
 n_runs = 10
 
 for _ in range(n_runs):
+
+    battle_results = {"fitness": -99, "weights": []}
+
+    env.update_parameter("enemies", [4])
 
     # Evolve population
     print(2 * "\n" + 7 * "-" + f" run {_}, parameter reset" + 7 * "-", end="\n\n")
@@ -122,7 +124,7 @@ for _ in range(n_runs):
         "mutation_sigma": hyperp["mutation_sigma"],
         "population_size": hyperp["population_size"],
         "n_best": hyperp["n_best"],
-        "phase": "initialize",
+        "phase": "-",
     }
 
     # Evolve population
@@ -147,28 +149,12 @@ for _ in range(n_runs):
             "mutation_p_genome": np.round(hyperp["mutation_p_genome"], 3),
             "mutation_sigma": np.round(hyperp["mutation_sigma"], 3),
             "n_best": hyperp["n_best"],
-            "phase": "initialize",
         }
     )
 
     data_handler.add_log([v for k, v in data_log.items()])
 
     for generation in range(1, hyperp["generations"] + 1):
-
-        if generation <= hyperp["exploration.period"]:
-            phase = "exploring"
-        else:
-            phase = "exploiting"
-            hyperp.update(
-                {
-                    "reproduce_p": hyperp["exploitive.reproduce_p"],
-                    "tournament_size": hyperp["exploitive.tournament_size"],
-                    "mutation_p_individual": hyperp["exploitive.mutation_p_individual"],
-                    "mutation_p_genome": hyperp["exploitive.mutation_p_genome"],
-                    "mutation_sigma": hyperp["exploitive.mutation_sigma"],
-                    "n_best": hyperp["exploitive.n_best"],
-                }
-            )
 
         # PARENT SELECTION
         parents_w, parents_f = algo.tournament_selection(population_w, population_f, hyperp["tournament_size"])
@@ -222,7 +208,6 @@ for _ in range(n_runs):
                 "mutation_p_genome": np.round(hyperp["mutation_p_genome"], 3),
                 "mutation_sigma": np.round(hyperp["mutation_sigma"], 3),
                 "n_best": hyperp["n_best"],
-                "phase": "-",
             }
         )
 
@@ -232,6 +217,20 @@ for _ in range(n_runs):
 
     hyperp = set_hyperparameters()
 
+    for enemy in enemies:
+        env.update_parameter("enemies", [enemy])
+
+        f, p, e, t = env.play(battle_results["weights"])
+
+        if not results.get(enemy):
+            results[enemy] = []
+
+        results[enemy].append(f)
+
+
+df = pd.DataFrame(results)
+df.to_csv("battle_output.csv")
+print(df)
 
 # ##############################
 # ##### Write to file (logs)

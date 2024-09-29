@@ -53,6 +53,7 @@ class DataHandler:
         try:
             with open(f"{path}/{file}", "r") as f:
                 self.champions = json.load(f)
+                return self.champions
 
         except FileNotFoundError:
             with open(f"{path}/{file}", "w") as f:
